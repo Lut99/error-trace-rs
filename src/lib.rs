@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    22 Sep 2023, 12:56:30
+//    22 Sep 2023, 12:59:18
 //  Auto updated?
 //    Yes
 // 
@@ -72,7 +72,7 @@
 //!   ![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colours.png).
 //!   
 //!   
-//!   ## Installation
+//!   # Installation
 //!   To use this crate into one of your projects, simply add it to your `Cargo.toml` file:
 //!   ```toml
 //!   error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
@@ -88,7 +88,7 @@
 //!   ```
 //!   in the root of the repository.
 //!   
-//!   ### Features
+//!   ## Features
 //!   The crate has the following features:
 //!   - `colours`: Enables the use of [`trace_coloured()`].
 // 
