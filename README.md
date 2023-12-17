@@ -41,10 +41,16 @@ use error_trace::ErrorTrace as _;
 
 // ...
 
+let err: HigherError = HigherError {
+    msg: "Oh no, something went wrong!".into(),
+    child: SomeError{
+        msg: "A specific reason".into()
+    }
+};
 eprintln!("{}", err.trace());
 ```
 This will show you:
-```
+```text
 Oh no, something went wrong!
 
 Caused by:
@@ -57,10 +63,35 @@ use error_trace::ErrorTrace as _;
 
 // ...
 
+let err: HigherError = HigherError {
+    msg: "Oh no, something went wrong!".into(),
+    child: SomeError{
+        msg: "A specific reason".into()
+    }
+};
+
 // Requires the `colours`-feature!
 eprintln!("{}", err.trace_coloured());
 ```
-![Showing the same error as above but with some errors](./img/example_colours.png).
+![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colours.png)
+
+Finally, when used in a situation where you want to show a quick error but are sure to never needs its contents, you can use the [`trace!()`]-macro:
+```rust
+use error_trace::trace;
+// Do something that fails
+let err = std::str::from_utf8(&[0xFF]).unwrap_err();
+// Format it with a one-time parent error
+eprintln!("{}", trace!(("Oh no, everything went wrong!"), err));
+```
+
+For users of the `colours`-feature, there is the associated [`trace_coloured!()`]-macro:
+```rust
+use error_trace::trace_coloured;
+// Do something that fails
+let err = std::str::from_utf8(&[0xFF]).unwrap_err();
+// Format it with a one-time parent error
+eprintln!("{}", trace_coloured!(("Oh no, everything went wrong!"), err));
+```
 
 
 ## Installation
@@ -70,7 +101,7 @@ error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
 ```
 Optionally, you can commit to a particular tag:
 ```toml
-error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v1.0.0" }
+error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v1.1.0" }
 ```
 
 To build this crate's documentation and open it, run:
@@ -81,7 +112,9 @@ in the root of the repository.
 
 ### Features
 The crate has the following features:
+- `colors`: Alias for the `colours`-trait.
 - `colours`: Enables the use of [`trace_coloured()`].
+- `macros`: Enables the use of the [`trace!()`]- and [`trace_coloured!()`]-macros.
 
 
 ## Contribution

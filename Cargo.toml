@@ -1,6 +1,6 @@
 [package]
 name = "error-trace"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 authors = [ "Lut99" ]
 description = "Small Rust crate for printing nice errors traits based on [`Error::source()`]."
@@ -12,5 +12,7 @@ console = { version = "0.15", optional = true }
 
 
 [features]
+default = [ "macros" ]
 colors  = [ "colours" ]
 colours = [ "colors", "dep:console" ]
+macros = []
