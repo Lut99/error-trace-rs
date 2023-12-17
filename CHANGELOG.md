@@ -4,6 +4,11 @@ This file keeps track of notable changes in between versions.
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes.
 
 
+## [1.1.1] - 2023-12-17
+### Fixed
+- Bad signature for the `trace!()`- and `trace_coloured!()` macros.
+
+
 ## [1.1.0] - 2023-12-17
 ### Added
 - The `trace!()`-macro, for quick, one-time error type creation with `ErrorTrace` support.

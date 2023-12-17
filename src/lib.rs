@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    17 Dec 2023, 18:00:55
+//    17 Dec 2023, 18:11:32
 //  Auto updated?
 //    Yes
 //
@@ -201,10 +201,9 @@ use console::style;
 /// # Arguments
 /// The macro has the following signature:
 /// ```plain
-/// ($fmt:literal $(, $args:expr)*), $err:expr
+/// (`$($args:tt)*), $err:expr
 /// ```
-/// - `$fmt:literal`: The format string (as a string literal) to use to generate the message.
-/// - `$(, $args:expr)*`: Zero or more arguments for the format string that can be used to build the message.
+/// - `$($args:tt)*`: A message to use for the toplevel error. This can be given the arguments to a [`format!`]-call.
 /// - `$err:expr`: The error to embed in the newly built type.
 ///
 /// # Returns
@@ -228,10 +227,41 @@ use console::style;
 /// "#
 /// );
 /// ```
+/// One can use full format strings for the message:
+/// ```rust
+/// use error_trace::trace;
+///
+/// // Do something that fails
+/// let bytes: [u8; 1] = [0xFF];
+/// let err = std::str::from_utf8(&bytes).unwrap_err();
+///
+/// // Format it with a one-time parent error
+/// assert_eq!(
+///     trace!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
+///     r#"Failed to parse '[255]'
+///
+/// Caused by:
+///  o invalid utf-8 sequence of 1 bytes from index 0
+///
+/// "#
+/// );
+///
+///
+/// // Equivalent to above (but using a neater format syntax!)
+/// assert_eq!(
+///     trace!(("Failed to parse '{bytes:?}'"), err).to_string(),
+///     r#"Failed to parse '[255]'
+///
+/// Caused by:
+///  o invalid utf-8 sequence of 1 bytes from index 0
+///
+/// "#
+/// );
+/// ```
 #[cfg(feature = "macros")]
 #[macro_export]
 macro_rules! trace {
-    (($fmt:literal $(, $args:tt)*), $err:expr) => {
+    (($($args:tt)*), $err:expr) => {
         {
             // Build the one-time type
             #[derive(::std::fmt::Debug)]
@@ -246,7 +276,7 @@ macro_rules! trace {
             }
 
             // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace(&_OneTimeError(format!($fmt $(, $args)*), $err))
+            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace(&_OneTimeError(format!($($args)*), $err))
         }
     };
 }
@@ -256,10 +286,9 @@ macro_rules! trace {
 /// # Arguments
 /// The macro has the following signature:
 /// ```plain
-/// ($fmt:literal $(, $args:expr)*), $err:expr
+/// ($($args:tt)*), $err:expr
 /// ```
-/// - `$fmt:literal`: The format string (as a string literal) to use to generate the message.
-/// - `$(, $args:expr)*`: Zero or more arguments for the format string that can be used to build the message.
+/// - `$($args:tt)*`: A message to use for the toplevel error. This can be given the arguments to a [`format!`]-call.
 /// - `$err:expr`: The error to embed in the newly built type.
 ///
 /// # Returns
@@ -283,10 +312,41 @@ macro_rules! trace {
 /// "#
 /// );
 /// ```
+/// One can use full format strings for the message:
+/// ```rust
+/// use error_trace::trace_coloured;
+///
+/// // Do something that fails
+/// let bytes: [u8; 1] = [0xFF];
+/// let err = std::str::from_utf8(&bytes).unwrap_err();
+///
+/// // Format it with a one-time parent error
+/// assert_eq!(
+///     trace_coloured!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
+///     r#"Failed to parse '[255]'
+///
+/// Caused by:
+///  o invalid utf-8 sequence of 1 bytes from index 0
+///
+/// "#
+/// );
+///
+///
+/// // Equivalent to above (but using a neater format syntax!)
+/// assert_eq!(
+///     trace_coloured!(("Failed to parse '{bytes:?}'"), err).to_string(),
+///     r#"Failed to parse '[255]'
+///
+/// Caused by:
+///  o invalid utf-8 sequence of 1 bytes from index 0
+///
+/// "#
+/// );
+/// ```
 #[cfg(all(feature = "colours", feature = "macros"))]
 #[macro_export]
 macro_rules! trace_coloured {
-    (($fmt:literal $(, $args:tt)*), $err:expr) => {
+    (($($args:tt)*), $err:expr) => {
         {
             // Build the one-time type
             #[derive(::std::fmt::Debug)]
@@ -301,7 +361,7 @@ macro_rules! trace_coloured {
             }
 
             // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace_coloured(&_OneTimeError(format!($fmt $(, $args)*), $err))
+            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace_coloured(&_OneTimeError(format!($($args)*), $err))
         }
     };
 }

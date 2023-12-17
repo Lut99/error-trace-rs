@@ -4,7 +4,7 @@
 //  Created:
 //    17 Dec 2023, 17:32:27
 //  Last edited:
-//    17 Dec 2023, 17:37:11
+//    17 Dec 2023, 18:06:14
 //  Auto updated?
 //    Yes
 //
@@ -39,6 +39,10 @@ impl Error for NestedError {}
 fn main() {
     // Let us create an error that uses [`NestedError`] as a reason
     eprintln!("ERROR: {}", trace!(("Something occurred as a result of something else"), NestedError));
+
+    // We can also use arguments
+    let value: u32 = 42;
+    eprintln!("ERROR: {}", trace!(("Cannot set to {value}"), NestedError));
 
     // If we have colour support, why not
     #[cfg(feature = "colours")]
