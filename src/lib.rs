@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    17 Dec 2023, 18:11:32
+//    09 Jan 2024, 11:26:08
 //  Auto updated?
 //    Yes
 //
@@ -264,19 +264,19 @@ macro_rules! trace {
     (($($args:tt)*), $err:expr) => {
         {
             // Build the one-time type
-            #[derive(::std::fmt::Debug)]
-            struct _OneTimeError<E>(::std::string::String, E);
-            impl<E> ::std::fmt::Display for _OneTimeError<E> {
+            #[derive(::std::clone::Clone, ::std::fmt::Debug)]
+            struct _OneTimeError<'e, E>(::std::string::String, &'e E);
+            impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
                 #[inline]
                 fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
             }
-            impl<E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<E> {
+            impl<'e, E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<'e, E> {
                 #[inline]
-                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(&self.1) }
+                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(self.1) }
             }
 
             // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace(&_OneTimeError(format!($($args)*), $err))
+            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace(&_OneTimeError(format!($($args)*), &$err))
         }
     };
 }
@@ -349,19 +349,19 @@ macro_rules! trace_coloured {
     (($($args:tt)*), $err:expr) => {
         {
             // Build the one-time type
-            #[derive(::std::fmt::Debug)]
-            struct _OneTimeError<E>(::std::string::String, E);
-            impl<E> ::std::fmt::Display for _OneTimeError<E> {
+            #[derive(::std::clone::Clone, ::std::fmt::Debug)]
+            struct _OneTimeError<'e, E>(::std::string::String, &'e E);
+            impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
                 #[inline]
                 fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
             }
-            impl<E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<E> {
+            impl<'e, E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<'e, E> {
                 #[inline]
-                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(&self.1) }
+                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(self.1) }
             }
 
             // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace_coloured(&_OneTimeError(format!($($args)*), $err))
+            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace_coloured(&_OneTimeError(format!($($args)*), &$err))
         }
     };
 }
