@@ -3,6 +3,11 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes.
 
+## [1.2.1] - 2024-01-09
+### Changed
+- Errors input to `trace!()` or `trace_coloured!()` no longer need to be sized.
+
+
 ## [1.2.0] - 2024-01-09
 ### Changed
 - The `trace!()`- and `trace_coloured!()`-macros to take the error by reference instead of ownership, as the temporary struct is temporary anyway.

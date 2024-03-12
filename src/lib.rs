@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    09 Jan 2024, 11:26:08
+//    12 Mar 2024, 13:48:20
 //  Auto updated?
 //    Yes
 //
@@ -265,7 +265,7 @@ macro_rules! trace {
         {
             // Build the one-time type
             #[derive(::std::clone::Clone, ::std::fmt::Debug)]
-            struct _OneTimeError<'e, E>(::std::string::String, &'e E);
+            struct _OneTimeError<'e, E: ?::std::marker::Sized>(::std::string::String, &'e E);
             impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
                 #[inline]
                 fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
@@ -350,7 +350,7 @@ macro_rules! trace_coloured {
         {
             // Build the one-time type
             #[derive(::std::clone::Clone, ::std::fmt::Debug)]
-            struct _OneTimeError<'e, E>(::std::string::String, &'e E);
+            struct _OneTimeError<'e, E: ?::std::marker::Sized>(::std::string::String, &'e E);
             impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
                 #[inline]
                 fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
