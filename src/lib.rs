@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    12 Mar 2024, 13:48:20
+//    17 Mar 2024, 12:54:12
 //  Auto updated?
 //    Yes
 //
@@ -188,8 +188,9 @@
 //!   - `macros`: Enables the use of the [`trace!()`]- and [`trace_coloured!()`]-macros.
 //
 
+use std::borrow::Cow;
 use std::error::Error;
-use std::fmt::{Debug, Display, Formatter, Result as FResult};
+use std::fmt::{Display, Formatter, Result as FResult};
 
 #[cfg(feature = "colours")]
 use console::style;
@@ -262,22 +263,7 @@ use console::style;
 #[macro_export]
 macro_rules! trace {
     (($($args:tt)*), $err:expr) => {
-        {
-            // Build the one-time type
-            #[derive(::std::clone::Clone, ::std::fmt::Debug)]
-            struct _OneTimeError<'e, E: ?::std::marker::Sized>(::std::string::String, &'e E);
-            impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
-                #[inline]
-                fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
-            }
-            impl<'e, E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<'e, E> {
-                #[inline]
-                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(self.1) }
-            }
-
-            // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace(&_OneTimeError(format!($($args)*), &$err))
-        }
+        ::error_trace::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
     };
 }
 
@@ -347,22 +333,7 @@ macro_rules! trace {
 #[macro_export]
 macro_rules! trace_coloured {
     (($($args:tt)*), $err:expr) => {
-        {
-            // Build the one-time type
-            #[derive(::std::clone::Clone, ::std::fmt::Debug)]
-            struct _OneTimeError<'e, E: ?::std::marker::Sized>(::std::string::String, &'e E);
-            impl<'e, E> ::std::fmt::Display for _OneTimeError<'e, E> {
-                #[inline]
-                fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result { ::std::write!(f, "{}", self.0) }
-            }
-            impl<'e, E: 'static + ::std::error::Error> ::std::error::Error for _OneTimeError<'e, E> {
-                #[inline]
-                fn source(&self) -> ::std::option::Option<&(dyn 'static + ::std::error::Error)> { Some(self.1) }
-            }
-
-            // Populate it, then trace
-            <_OneTimeError<_> as ::error_trace::ErrorTrace>::trace_coloured(&_OneTimeError(format!($($args)*), &$err))
-        }
+        ::error_trace::ErrorTraceColourFormatter::new(format!($($args)*), Some(&$err))
     };
 }
 
@@ -391,70 +362,40 @@ macro_rules! trace_coloured {
 /// impl Error for ExampleError {}
 ///
 /// let err = ExampleError { msg: "Hello, world!".into() };
-/// let fmt: ErrorTraceFormatter<ExampleError> = err.trace();
+/// let fmt: ErrorTraceFormatter = err.trace();
 /// assert_eq!(format!("{fmt}"), "Hello, world!");
-/// assert_eq!(format!("{fmt:?}"), "ExampleError { msg: \"Hello, world!\" }");
 /// ```
-pub struct ErrorTraceFormatter<'e, E: ?Sized> {
-    /// The error to format.
-    err: &'e E,
+pub struct ErrorTraceFormatter<'s, 'e> {
+    /// The message that is the main error message.
+    msg: Cow<'s, str>,
+    /// An optional nested error to format that is the first element in the tree.
+    err: Option<&'e (dyn 'static + Error)>,
 }
-impl<'e, E: Error> Debug for ErrorTraceFormatter<'e, E> {
+impl<'s, 'e> ErrorTraceFormatter<'s, 'e> {
+    /// Builds a formatter for a given "anonymous error".
+    ///
+    /// This is useful for creating one-time error traces where you don't want to create the root type.
+    ///
+    /// For even more convenience, see the [`trace!`]-macro.
+    ///
+    /// # Arguments
+    /// - `msg`: A message that is printed as "current error".
+    /// - `err`: An optional error that, if any, will cause this formatter to start printing a trace based on the error's [`Error::source()`]-implementation.
+    ///
+    /// # Returns
+    /// A new ErrorTraceFormatter ready to rock-n-roll.
+    #[inline]
+    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e (dyn 'static + Error)>) -> Self { Self { msg: msg.into(), err } }
+}
+impl<'s, 'e> Display for ErrorTraceFormatter<'s, 'e> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
         // Match on beautiness
         if f.alternate() {
             // Always print the thing
-            write!(f, "{:#?}", self.err)?;
+            write!(f, "{:#}", self.msg)?;
 
             // Print any deps if any
-            if let Some(source) = self.err.source() {
-                // Write the thingy
-                write!(f, "\n\nCaused by:")?;
-
-                let mut source: Option<&dyn Error> = Some(source);
-                while let Some(err) = source.take() {
-                    // Print it
-                    write!(f, "\n o {err:#?}")?;
-                    source = err.source();
-                }
-
-                // Write closing enters
-                writeln!(f, "\n")?;
-            }
-        } else {
-            // Always print the thing
-            write!(f, "{:?}", self.err)?;
-
-            // Print any deps if any
-            if let Some(source) = self.err.source() {
-                // Write the thingy
-                write!(f, "\n\nCaused by:")?;
-
-                let mut source: Option<&dyn Error> = Some(source);
-                while let Some(err) = source.take() {
-                    // Print it
-                    write!(f, "\n o {err:?}")?;
-                    source = err.source();
-                }
-
-                // Write closing enters
-                writeln!(f, "\n")?;
-            }
-        }
-
-        // Done!
-        Ok(())
-    }
-}
-impl<'e, E: Error> Display for ErrorTraceFormatter<'e, E> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
-        // Match on beautiness
-        if f.alternate() {
-            // Always print the thing
-            write!(f, "{:#}", self.err)?;
-
-            // Print any deps if any
-            if let Some(source) = self.err.source() {
+            if let Some(source) = self.err {
                 // Write the thingy
                 write!(f, "\n\nCaused by:")?;
 
@@ -470,10 +411,10 @@ impl<'e, E: Error> Display for ErrorTraceFormatter<'e, E> {
             }
         } else {
             // Always print the thing
-            write!(f, "{}", self.err)?;
+            write!(f, "{}", self.msg)?;
 
             // Print any deps if any
-            if let Some(source) = self.err.source() {
+            if let Some(source) = self.err {
                 // Write the thingy
                 write!(f, "\n\nCaused by:")?;
 
@@ -518,75 +459,45 @@ impl<'e, E: Error> Display for ErrorTraceFormatter<'e, E> {
 /// impl Error for ExampleError {}
 ///
 /// let err = ExampleError { msg: "Hello, world!".into() };
-/// let fmt: ErrorTraceColourFormatter<ExampleError> = err.trace_coloured();
+/// let fmt: ErrorTraceColourFormatter = err.trace_coloured();
 ///
 /// // Colours aren't visible here, because we're writing to a string; but try writing to stdout/stderr!
 /// assert_eq!(format!("{fmt}"), "Hello, world!");
-/// assert_eq!(format!("{fmt:?}"), "ExampleError { msg: \"Hello, world!\" }");
 /// ```
 #[cfg(feature = "colours")]
-pub struct ErrorTraceColourFormatter<'e, E: ?Sized> {
-    /// The error to format.
-    err: &'e E,
+pub struct ErrorTraceColourFormatter<'s, 'e> {
+    /// The message that is the main error message.
+    msg: Cow<'s, str>,
+    /// An optional nested error to format that is the first element in the tree.
+    err: Option<&'e (dyn 'static + Error)>,
 }
 #[cfg(feature = "colours")]
-impl<'e, E: Error> Debug for ErrorTraceColourFormatter<'e, E> {
+impl<'s, 'e> ErrorTraceColourFormatter<'s, 'e> {
+    /// Builds a formatter for a given "anonymous error".
+    ///
+    /// This is useful for creating one-time error traces where you don't want to create the root type.
+    ///
+    /// For even more convenience, see the [`trace!`]-macro.
+    ///
+    /// # Arguments
+    /// - `msg`: A message that is printed as "current error".
+    /// - `err`: An optional error that, if any, will cause this formatter to start printing a trace based on the error's [`Error::source()`]-implementation.
+    ///
+    /// # Returns
+    /// A new ErrorTraceColourFormatter ready to rock-n-roll.
+    #[inline]
+    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e (dyn 'static + Error)>) -> Self { Self { msg: msg.into(), err } }
+}
+#[cfg(feature = "colours")]
+impl<'s, 'e> Display for ErrorTraceColourFormatter<'s, 'e> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
         // Match on beautiness
         if f.alternate() {
             // Always print the thing
-            write!(f, "{}", style(format!("{:#?}", self.err)).for_stderr().bold())?;
+            write!(f, "{}", style(format!("{:#}", self.msg)).for_stderr().bold())?;
 
             // Print any deps if any
-            if let Some(source) = self.err.source() {
-                // Write the thingy
-                write!(f, "\n\n{}", style("Caused by:").for_stderr().red().bold())?;
-
-                let mut source: Option<&dyn Error> = Some(source);
-                while let Some(err) = source.take() {
-                    // Print it
-                    write!(f, "\n o {}", style(format!("{err:#?}")).for_stderr().bold())?;
-                    source = err.source();
-                }
-
-                // Write closing enters
-                writeln!(f, "\n")?;
-            }
-        } else {
-            // Always print the thing
-            write!(f, "{}", style(format!("{:?}", self.err)).for_stderr().bold())?;
-
-            // Print any deps if any
-            if let Some(source) = self.err.source() {
-                // Write the thingy
-                write!(f, "\n\n{}", style("Caused by:").for_stderr().red().bold())?;
-
-                let mut source: Option<&dyn Error> = Some(source);
-                while let Some(err) = source.take() {
-                    // Print it
-                    write!(f, "\n o {}", style(format!("{err:?}")).for_stderr().bold())?;
-                    source = err.source();
-                }
-
-                // Write closing enters
-                writeln!(f, "\n")?;
-            }
-        }
-
-        // Done!
-        Ok(())
-    }
-}
-#[cfg(feature = "colours")]
-impl<'e, E: Error> Display for ErrorTraceColourFormatter<'e, E> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
-        // Match on beautiness
-        if f.alternate() {
-            // Always print the thing
-            write!(f, "{}", style(format!("{:#}", self.err)).for_stderr().bold())?;
-
-            // Print any deps if any
-            if let Some(source) = self.err.source() {
+            if let Some(source) = self.err {
                 // Write the thingy
                 write!(f, "\n\n{}", style("Caused by:").for_stderr().red().bold())?;
 
@@ -602,10 +513,10 @@ impl<'e, E: Error> Display for ErrorTraceColourFormatter<'e, E> {
             }
         } else {
             // Always print the thing
-            write!(f, "{}", style(self.err).for_stderr().bold())?;
+            write!(f, "{}", style(&self.msg).for_stderr().bold())?;
 
             // Print any deps if any
-            if let Some(source) = self.err.source() {
+            if let Some(source) = self.err {
                 // Write the thingy
                 write!(f, "\n\n{}", style("Caused by:").for_stderr().red().bold())?;
 
@@ -729,7 +640,7 @@ pub trait ErrorTrace: Error {
     ///  o A specific reason
     ///
     /// "#);
-    fn trace(&self) -> ErrorTraceFormatter<Self>;
+    fn trace(&self) -> ErrorTraceFormatter;
 
     /// Returns a formatter for showing this Error and all its [source](Error::source())s with nice colours.
     ///
@@ -783,11 +694,11 @@ pub trait ErrorTrace: Error {
     ///
     /// "#);
     #[cfg(feature = "colours")]
-    fn trace_coloured(&self) -> ErrorTraceColourFormatter<Self>;
+    fn trace_coloured(&self) -> ErrorTraceColourFormatter;
 }
 impl<T: ?Sized + Error> ErrorTrace for T {
-    fn trace(&self) -> ErrorTraceFormatter<Self> { ErrorTraceFormatter { err: self } }
+    fn trace(&self) -> ErrorTraceFormatter { ErrorTraceFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 
     #[cfg(feature = "colours")]
-    fn trace_coloured(&self) -> ErrorTraceColourFormatter<Self> { ErrorTraceColourFormatter { err: self } }
+    fn trace_coloured(&self) -> ErrorTraceColourFormatter { ErrorTraceColourFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 }

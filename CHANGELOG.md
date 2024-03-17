@@ -3,6 +3,13 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes.
 
+## [2.0.0] - 2024-03-17
+### Removed
+- `ErrorTraceFormatter` and `ErrorTraceColourFormatter` no longer support `Debug` (deemed unnecessary and resulting in easier fix below).
+
+### Fixed
+- `trace!()`- and `trace_coloured!()`-macros to now accept unsized error types.
+
 ## [1.2.1] - 2024-01-09
 ### Changed
 - Errors input to `trace!()` or `trace_coloured!()` no longer need to be sized.
