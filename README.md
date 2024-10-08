@@ -101,7 +101,7 @@ error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
 ```
 Optionally, you can commit to a particular tag:
 ```toml
-error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v1.1.0" }
+error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v3.0.0" }
 ```
 
 To build this crate's documentation and open it, run:

@@ -3,8 +3,8 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
-## [2.1.0] - TODO
-This update sees a license change. From now on, the project is available under the [Apache 2.0](./LICENSE) license.
+## [3.0.0] - 2024-09-08
+This update sees a license change. From now on, the project is available under the [Apache 2.0](./LICENSE) license **(BREAKING)**.
 
 
 ## [2.0.0] - 2024-07-22
