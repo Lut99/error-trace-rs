@@ -3,8 +3,9 @@ name = "error-trace"
 version = "2.0.0"
 edition = "2021"
 authors = [ "Lut99" ]
-description = "Small Rust crate for printing nice errors traits based on [`Error::source()`]."
+description = "Small Rust crate for printing nice errors traits based on `std::error::Error::source()`."
 repository = "https://github.com/Lut99/error-trace-rs"
+license = "Apache-2.0"
 
 
 [dependencies]
