@@ -1,5 +1,5 @@
 # error-trace-rs
-Small Rust crate for printing nice errors traits based on [`Error::source()`].
+Small Rust crate for printing nice errors traits based on `std::error::Error::source()`.
 
 
 ## Usage
@@ -122,4 +122,6 @@ If you are interested in contributing in this project, feel free to raise [an is
 
 
 ## License
-This project is licensed under the GPLv3 license. See [LICENSE](./LICENSE) for more information.
+This project is now licensed under the Apache 2.0 license. See [LICENSE](./LICENSE) for more information.
+
+
