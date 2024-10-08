@@ -3,6 +3,10 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [2.1.0] - TODO
+This update sees a license change. From now on, the project is available under the [Apache 2.0](./LICENSE) license.
+
+
 ## [2.0.0] - 2024-07-22
 ### Removed
 - `ErrorTraceFormatter` and `ErrorTraceColourFormatter` no longer support `Debug` (deemed unnecessary and resulting in easier fix below) **(BREAKING)**.
