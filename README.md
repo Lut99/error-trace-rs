@@ -75,7 +75,7 @@ eprintln!("{}", err.trace_coloured());
 ```
 ![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colours.png)
 
-Finally, when used in a situation where you want to show a quick error but are sure to never needs its contents, you can use the [`trace!()`]-macro:
+Finally, when used in a situation where you want to show a quick error but are sure to never needs its contents, you can use the `trace!()`-macro:
 ```rust
 use error_trace::trace;
 // Do something that fails
@@ -84,7 +84,7 @@ let err = std::str::from_utf8(&[0xFF]).unwrap_err();
 eprintln!("{}", trace!(("Oh no, everything went wrong!"), err));
 ```
 
-For users of the `colours`-feature, there is the associated [`trace_coloured!()`]-macro:
+For users of the `colours`-feature, there is the associated `trace_coloured!()`-macro:
 ```rust
 use error_trace::trace_coloured;
 // Do something that fails
@@ -92,6 +92,11 @@ let err = std::str::from_utf8(&[0xFF]).unwrap_err();
 // Format it with a one-time parent error
 eprintln!("{}", trace_coloured!(("Oh no, everything went wrong!"), err));
 ```
+
+### Freezing
+In some scenarios, an error you may have is not itself `'static` and can therefore not be propagated in `Error::source()`. To workaround this issue, consider the `ErrorTrace::freeze()`-function: it returns a `Trace`-object, which returns the same trace as the original error would except that it has serialized all errors into `String`s. As such, it is decoupled from the type.
+
+See the documentation of `ErrorTrace::freeze()` or `Trace` for more information.
 
 
 ## Installation
@@ -101,7 +106,7 @@ error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
 ```
 Optionally, you can commit to a particular tag:
 ```toml
-error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v3.0.0" }
+error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v3.1.0" }
 ```
 
 To build this crate's documentation and open it, run:

@@ -3,6 +3,12 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [3.1.0] - TODO
+### Added
+- The `Trace` helper type, which can be used to serialize an error and all its sources and then store in another type.
+    - This is useful in cases when there are lifetimes on an error but it should be passed outside of those lifetimes. See the [`trace.rs`](./examples/trace.rs) for an example.
+
+
 ## [3.0.0] - 2024-09-08
 This update sees a license change. From now on, the project is available under the [Apache 2.0](./LICENSE) license **(BREAKING)**.
 

@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    17 Mar 2024, 12:54:12
+//    10 Oct 2024, 16:54:02
 //  Auto updated?
 //    Yes
 //
@@ -541,6 +541,117 @@ impl<'s, 'e> Display for ErrorTraceColourFormatter<'s, 'e> {
 
 
 
+/***** AUXILLARY *****/
+/// A helper type that can be used to "freeze" a trace and then pass it on to a further error.
+///
+/// This is useful in case you're dealing with errors where you don't want to propagate the type
+/// (e.g., due to lifetimes) but do want to propagate the trace.
+///
+/// # Example
+/// ```rust
+/// use std::error::Error;
+/// use std::fmt::{Display, Formatter, Result as FResult};
+///
+/// use error_trace::{ErrorTrace as _, Trace};
+///
+/// #[derive(Debug)]
+/// struct SomeError {
+///     msg: String,
+/// }
+/// impl Display for SomeError {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> FResult { write!(f, "{}", self.msg) }
+/// }
+/// impl Error for SomeError {}
+///
+/// #[derive(Debug)]
+/// struct HigherError {
+///     msg:   String,
+///     child: SomeError,
+/// }
+/// impl Display for HigherError {
+///     fn fmt(&self, f: &mut Formatter<'_>) -> FResult { write!(f, "{}", self.msg) }
+/// }
+/// impl Error for HigherError {
+///     fn source(&self) -> Option<&(dyn 'static + Error)> { Some(&self.child) }
+/// }
+///
+///
+///
+/// let err = HigherError {
+///     msg:   "Oh no, something went wrong!".into(),
+///     child: SomeError { msg: "A specific reason".into() },
+/// };
+/// assert_eq!(
+///     Trace::new(err).trace().to_string(),
+///     r#"Oh no, something went wrong!
+///
+/// Caused by:
+///  o A specific reason
+///
+/// "#
+/// );
+/// ```
+#[derive(Clone, Debug)]
+pub struct Trace {
+    /// The error on this level.
+    pub message: String,
+    /// The error on the next level, if any.
+    pub source:  Option<Box<Self>>,
+}
+impl Trace {
+    /// Builds a new Trace from the given [`Error`].
+    ///
+    /// # Arguments
+    /// - `err`: The error to walk and to freeze the errors of by serializing the messages.
+    ///
+    /// # Returns
+    /// A new Trace that itself implements [`Error`] again.
+    ///
+    /// # Example
+    /// See [`Trace`] itself for an example of how to use it, or see [`ErrorTrace::freeze()`].
+    #[inline]
+    pub fn new(err: impl Error) -> Self { Self { message: err.to_string(), source: err.source().map(|err| Box::new(Trace::new(err))) } }
+
+    /// Builds a new Trace from a single [`String`].
+    ///
+    /// # Arguments
+    /// - `msg`: The (already serialized) message to wrap this trace around.
+    ///
+    /// # Returns
+    /// A new Trace that wraps the `msg` implementing [`Error`].
+    ///
+    /// # Example
+    /// ```rust
+    /// use std::error::Error as _;
+    ///
+    /// use error_trace::{ErrorTrace as _, Trace};
+    ///
+    /// let trace = Trace::from_msg("Hello there!");
+    /// assert_eq!(trace.trace().to_string(), "Hello there!");
+    /// ```
+    #[inline]
+    pub fn from_msg(msg: impl Into<String>) -> Self { Self { message: msg.into(), source: None } }
+
+    /// Returns this Trace as an [`Error`] trait object.
+    ///
+    /// # Returns
+    /// A [`&'static dyn Error`](Error) which is even static!
+    #[inline]
+    pub fn as_error(&self) -> &(dyn 'static + Error) { self }
+}
+impl Display for Trace {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter<'_>) -> FResult { write!(f, "{}", self.message) }
+}
+impl Error for Trace {
+    #[inline]
+    fn source(&self) -> Option<&(dyn Error + 'static)> { self.source.as_ref().map(|src| src.as_error()) }
+}
+
+
+
+
+
 /***** LIBRARY *****/
 /// Allows one to write an error and all of its dependencies.
 ///
@@ -589,6 +700,68 @@ impl<'s, 'e> Display for ErrorTraceColourFormatter<'s, 'e> {
 /// );
 /// ```
 pub trait ErrorTrace: Error {
+    /// "Freezes" the trace of this error.
+    ///
+    /// This is useful in case you're dealing with errors where you don't want to propagate the type
+    /// (e.g., due to lifetimes) but do want to propagate the trace.
+    ///
+    /// # Returns
+    /// A [`Trace`] that returns the same trace when formatter, except all errors are serialized to [`String`]s.
+    ///
+    /// # Example
+    /// ```rust
+    /// # use std::error::Error;
+    /// # use std::fmt::{Display, Formatter, Result as FResult};
+    /// #
+    /// use error_trace::ErrorTrace as _;
+    ///
+    /// # #[derive(Debug)]
+    /// # struct SomeError {
+    /// #     msg : String,
+    /// # }
+    /// # impl Display for SomeError {
+    /// #     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
+    /// #         write!(f, "{}", self.msg)
+    /// #     }
+    /// # }
+    /// # impl Error for SomeError {}
+    /// #
+    /// # #[derive(Debug)]
+    /// # struct HigherError {
+    /// #     msg   : String,
+    /// #     child : SomeError,
+    /// # }
+    /// # impl Display for HigherError {
+    /// #     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
+    /// #         write!(f, "{}", self.msg)
+    /// #     }
+    /// # }
+    /// # impl Error for HigherError {
+    /// #     fn source(&self) -> Option<&(dyn 'static + Error)> {
+    /// #         Some(&self.child)
+    /// #     }
+    /// # }
+    /// #
+    /// #
+    /// #
+    /// let err = HigherError {
+    ///     msg:   "Oh no, something went wrong!".into(),
+    ///     child: SomeError { msg: "A specific reason".into() },
+    /// };
+    /// assert_eq!(
+    ///     err.freeze().trace().to_string(),
+    ///     r#"Oh no, something went wrong!
+    ///
+    /// Caused by:
+    ///  o A specific reason
+    ///
+    /// "#
+    /// );
+    /// ```
+    fn freeze(&self) -> Trace;
+
+
+
     /// Returns a formatter for showing this Error and all its [source](Error::source())s.
     ///
     /// This function can be used similarly to [`Path::display()`](std::path::Path::display()), since its result
@@ -697,8 +870,13 @@ pub trait ErrorTrace: Error {
     fn trace_coloured(&self) -> ErrorTraceColourFormatter;
 }
 impl<T: ?Sized + Error> ErrorTrace for T {
+    #[inline]
+    fn freeze(&self) -> Trace { Trace::new(self) }
+
+    #[inline]
     fn trace(&self) -> ErrorTraceFormatter { ErrorTraceFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 
     #[cfg(feature = "colours")]
+    #[inline]
     fn trace_coloured(&self) -> ErrorTraceColourFormatter { ErrorTraceColourFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 }
