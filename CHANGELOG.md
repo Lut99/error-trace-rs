@@ -6,7 +6,7 @@ This project uses [semantic versioning](https://semver.org). As such, we will ma
 ## [3.1.0] - 2024-10-10
 ### Added
 - The `Trace` helper type, which can be used to serialize an error and all its sources and then store in another type.
-    - This is useful in cases when there are lifetimes on an error but it should be passed outside of those lifetimes. See the [`trace.rs`](./examples/trace.rs) for an example.
+    - This is useful in cases when there are lifetimes on an error but it should be passed outside of those lifetimes. See the documentation of `Trace` for an example.
 
 
 ## [3.0.0] - 2024-10-08
