@@ -3,6 +3,10 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [3.2.0] - 2024-10-23
+### Added
+- The optional `serde`-feature, which implements `Deserialize` and `Serialize` for `Trace`.
+
 ## [3.1.0] - 2024-10-10
 ### Added
 - The `Trace` helper type, which can be used to serialize an error and all its sources and then store in another type.

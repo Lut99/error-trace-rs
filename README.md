@@ -120,6 +120,7 @@ The crate has the following features:
 - `colors`: Alias for the `colours`-trait.
 - `colours`: Enables the use of [`trace_coloured()`].
 - `macros`: Enables the use of the [`trace!()`]- and [`trace_coloured!()`]-macros.
+- `serde`: Implements `Deserialize` and `Serialize` for the `Trace`-structure.
 
 
 ## Contribution

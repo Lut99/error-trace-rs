@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    10 Oct 2024, 16:54:02
+//    23 Oct 2024, 13:45:18
 //  Auto updated?
 //    Yes
 //
@@ -186,6 +186,7 @@
 //!   - `colors`: Alias for the `colours`-trait.
 //!   - `colours`: Enables the use of [`trace_coloured()`].
 //!   - `macros`: Enables the use of the [`trace!()`]- and [`trace_coloured!()`]-macros.
+//!   - `serde`: Implements `Deserialize` and `Serialize` for the `Trace`-structure.
 //
 
 use std::borrow::Cow;
@@ -592,6 +593,7 @@ impl<'s, 'e> Display for ErrorTraceColourFormatter<'s, 'e> {
 /// );
 /// ```
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Trace {
     /// The error on this level.
     pub message: String,
