@@ -3,6 +3,10 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [3.2.1] - 2024-10-24
+### Fixed
+- The `trace!()`- and `trace_coloured!()`-macros no longer have an unnecessary `'static`-bound on input error types.
+
 ## [3.2.0] - 2024-10-23
 ### Added
 - The optional `serde`-feature, which implements `Deserialize` and `Serialize` for `Trace`.

@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    23 Oct 2024, 13:45:18
+//    24 Oct 2024, 13:23:15
 //  Auto updated?
 //    Yes
 //
@@ -189,6 +189,11 @@
 //!   - `serde`: Implements `Deserialize` and `Serialize` for the `Trace`-structure.
 //
 
+// Modules
+#[cfg(test)]
+mod tests;
+
+// Imports
 use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result as FResult};
@@ -263,6 +268,10 @@ use console::style;
 #[cfg(feature = "macros")]
 #[macro_export]
 macro_rules! trace {
+    (crate ($($args:tt)*), $err:expr) => {
+        crate::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
+    };
+
     (($($args:tt)*), $err:expr) => {
         ::error_trace::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
     };
@@ -366,13 +375,13 @@ macro_rules! trace_coloured {
 /// let fmt: ErrorTraceFormatter = err.trace();
 /// assert_eq!(format!("{fmt}"), "Hello, world!");
 /// ```
-pub struct ErrorTraceFormatter<'s, 'e> {
+pub struct ErrorTraceFormatter<'s, 'e1, 'e2> {
     /// The message that is the main error message.
     msg: Cow<'s, str>,
     /// An optional nested error to format that is the first element in the tree.
-    err: Option<&'e (dyn 'static + Error)>,
+    err: Option<&'e1 (dyn 'e2 + Error)>,
 }
-impl<'s, 'e> ErrorTraceFormatter<'s, 'e> {
+impl<'s, 'e1, 'e2> ErrorTraceFormatter<'s, 'e1, 'e2> {
     /// Builds a formatter for a given "anonymous error".
     ///
     /// This is useful for creating one-time error traces where you don't want to create the root type.
@@ -386,9 +395,9 @@ impl<'s, 'e> ErrorTraceFormatter<'s, 'e> {
     /// # Returns
     /// A new ErrorTraceFormatter ready to rock-n-roll.
     #[inline]
-    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e (dyn 'static + Error)>) -> Self { Self { msg: msg.into(), err } }
+    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e1 (dyn 'e2 + Error)>) -> Self { Self { msg: msg.into(), err } }
 }
-impl<'s, 'e> Display for ErrorTraceFormatter<'s, 'e> {
+impl<'s, 'e1, 'e2> Display for ErrorTraceFormatter<'s, 'e1, 'e2> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
         // Match on beautiness
         if f.alternate() {
@@ -466,14 +475,14 @@ impl<'s, 'e> Display for ErrorTraceFormatter<'s, 'e> {
 /// assert_eq!(format!("{fmt}"), "Hello, world!");
 /// ```
 #[cfg(feature = "colours")]
-pub struct ErrorTraceColourFormatter<'s, 'e> {
+pub struct ErrorTraceColourFormatter<'s, 'e1, 'e2> {
     /// The message that is the main error message.
     msg: Cow<'s, str>,
     /// An optional nested error to format that is the first element in the tree.
-    err: Option<&'e (dyn 'static + Error)>,
+    err: Option<&'e1 (dyn 'e2 + Error)>,
 }
 #[cfg(feature = "colours")]
-impl<'s, 'e> ErrorTraceColourFormatter<'s, 'e> {
+impl<'s, 'e1, 'e2> ErrorTraceColourFormatter<'s, 'e1, 'e2> {
     /// Builds a formatter for a given "anonymous error".
     ///
     /// This is useful for creating one-time error traces where you don't want to create the root type.
@@ -487,10 +496,10 @@ impl<'s, 'e> ErrorTraceColourFormatter<'s, 'e> {
     /// # Returns
     /// A new ErrorTraceColourFormatter ready to rock-n-roll.
     #[inline]
-    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e (dyn 'static + Error)>) -> Self { Self { msg: msg.into(), err } }
+    pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e1 (dyn 'e2 + Error)>) -> Self { Self { msg: msg.into(), err } }
 }
 #[cfg(feature = "colours")]
-impl<'s, 'e> Display for ErrorTraceColourFormatter<'s, 'e> {
+impl<'s, 'e1, 'e2> Display for ErrorTraceColourFormatter<'s, 'e1, 'e2> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
         // Match on beautiness
         if f.alternate() {
