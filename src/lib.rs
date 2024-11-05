@@ -4,7 +4,7 @@
 //  Created:
 //    22 Sep 2023, 12:17:19
 //  Last edited:
-//    24 Oct 2024, 13:23:15
+//    05 Nov 2024, 11:38:27
 //  Auto updated?
 //    Yes
 //
@@ -642,6 +642,17 @@ impl Trace {
     /// ```
     #[inline]
     pub fn from_msg(msg: impl Into<String>) -> Self { Self { message: msg.into(), source: None } }
+
+    /// Builds a new Trace from a message and a source [`Error`].
+    ///
+    /// # Arguments
+    /// - `msg`: Some toplevel to show as root cause.
+    /// - `err`: The first error of the trace that causes `msg`.
+    ///
+    /// # Returns
+    /// A new Trace that wraps the `msg` as error, with `err` as trace, and that implements [`Error`].
+    #[inline]
+    pub fn from_source(msg: impl Into<String>, err: impl Error) -> Self { Self { message: msg.into(), source: Some(Box::new(err.freeze())) } }
 
     /// Returns this Trace as an [`Error`] trait object.
     ///
