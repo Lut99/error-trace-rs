@@ -3,6 +3,10 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [3.3.1] - 2025-06-20
+### Changed
+- Lowered minimum versions in `Cargo.toml` to actually the minimum supported versions.
+
 ## [3.3.0] - 2024-11-05
 ### Added
 - `Trace::from_source()` from when the trace needs an additional message on top of the given error.
