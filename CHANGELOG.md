@@ -3,6 +3,21 @@ This file keeps track of notable changes in between versions.
 
 This project uses [semantic versioning](https://semver.org). As such, we will mark which are breaking changes with **(BREAKING)**.
 
+## [4.0.0] - 2025-07-01
+### Added
+- Some `crates.io`-preferred Cargo.toml sections.
+
+### Changed
+- Renamed all UK `coloured` to US `colored`. **(BREAKING)**
+- Renamed `Trace` to `FrozenTrace` for better naming. **(BREAKING)**
+- Renamed `trace!()` to `toplevel!()` for disambiguation with e.g. [`log`](https://docs.rs/log/latest/log/)'s `trace!()`-macro. **(BREAKING)**
+- Renamed `trace_coloured!()` to `toplevel_colored!()`. **(BREAKING)**
+
+### Fixed
+- Documentation not including items behind non-default features.
+  - To properly show them with the feature gates, use the nightly `rustdoc` version.
+- Tests not running.
+
 ## [3.3.1] - 2025-06-20
 ### Changed
 - Lowered minimum versions in `Cargo.toml` to actually the minimum supported versions.

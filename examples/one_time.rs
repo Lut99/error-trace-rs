@@ -12,13 +12,10 @@
 //!   Shows the usage of the [`trace!()`]-macro.
 //
 
-#[cfg(not(feature = "macros"))]
-compile_error!("To run `one_time.rs`, please enable the `macros` feature");
-
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result as FResult};
 
-use error_trace::trace;
+use error_trace::toplevel;
 
 
 /***** ERRORS *****/
@@ -38,13 +35,13 @@ impl Error for NestedError {}
 /***** ENTRYPOINT *****/
 fn main() {
     // Let us create an error that uses [`NestedError`] as a reason
-    eprintln!("ERROR: {}", trace!(("Something occurred as a result of something else"), NestedError));
+    eprintln!("ERROR: {}", toplevel!(("Something occurred as a result of something else"), NestedError));
 
     // We can also use arguments
     let value: u32 = 42;
-    eprintln!("ERROR: {}", trace!(("Cannot set to {value}"), NestedError));
+    eprintln!("ERROR: {}", toplevel!(("Cannot set to {value}"), NestedError));
 
     // If we have colour support, why not
-    #[cfg(feature = "colours")]
-    eprintln!("ERROR: {}", error_trace::trace_coloured!(("Something occurred as a result of something else"), NestedError));
+    #[cfg(feature = "colors")]
+    eprintln!("ERROR: {}", error_trace::toplevel_colored!(("Something occurred as a result of something else"), NestedError));
 }

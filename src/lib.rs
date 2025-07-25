@@ -1,3 +1,4 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
 //  LIB.rs
 //    by Lut99
 //
@@ -10,10 +11,10 @@
 //
 //  Description:
 //!   Small Rust crate for printing nice errors traits based on [`Error::source()`].
-//!   
+//!
 //!   # Usage
 //!   Using the crate is quite straightforward.
-//!   
+//!
 //!   First, create your errors as usual:
 //!   ```rust
 //!   # use std::error::Error;
@@ -28,7 +29,7 @@
 //!       }
 //!   }
 //!   impl Error for SomeError {}
-//!   
+//!
 //!   #[derive(Debug)]
 //!   struct HigherError {
 //!       msg   : String,
@@ -45,11 +46,11 @@
 //!       }
 //!   }
 //!   ```
-//!   
+//!
 //!   Then, when it is time to report them to the user, do not print them directly but instead use the `ErrorTrace`-trait's `trace()` function:
 //!   ```rust
 //!   use error_trace::ErrorTrace as _;
-//!   
+//!
 //!   # use std::error::Error;
 //!   # use std::fmt::{Display, Formatter, Result as FResult};
 //!   # #[derive(Debug)]
@@ -79,7 +80,7 @@
 //!   #     }
 //!   # }
 //!   // ...
-//!   
+//!
 //!   let err: HigherError = HigherError {
 //!       msg: "Oh no, something went wrong!".into(),
 //!       child: SomeError{
@@ -91,15 +92,15 @@
 //!   This will show you:
 //!   ```text
 //!   Oh no, something went wrong!
-//!   
+//!
 //!   Caused by:
 //!    o A specific reason
 //!   ```
-//!   
-//!   If you enable the `colours`-feature, you can additionally print some neat colours:
+//!
+//!   If you enable the `colors`-feature, you can additionally print some neat colors:
 //!   ```rust
 //!   use error_trace::ErrorTrace as _;
-//!   
+//!
 //!   # use std::error::Error;
 //!   # use std::fmt::{Display, Formatter, Result as FResult};
 //!   # #[derive(Debug)]
@@ -129,42 +130,43 @@
 //!   #     }
 //!   # }
 //!   // ...
-//!   
+//!
 //!   let err: HigherError = HigherError {
 //!       msg: "Oh no, something went wrong!".into(),
 //!       child: SomeError{
 //!           msg: "A specific reason".into()
 //!       }
 //!   };
-//!   
-//!   // Requires the `colours`-feature!
-//!   eprintln!("{}", err.trace_coloured());
-//!   ```
-//!   ![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colours.png)
 //!
-//!   Finally, when used in a situation where you want to show a quick error but are sure to never needs its contents, you can use the [`trace!()`]-macro:
+//!   // Requires the `colors`-feature!
+//!   eprintln!("{}", err.trace_colored());
+//!   ```
+//!   ![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colors.png)
+//!
+//!   Finally, when used in a situation where you want to show a quick error but are sure to never
+//!   needs its contents, you can use the [`toplevel!()`]-macro:
 //!   ```rust
-//!   use error_trace::trace;
-//!  
+//!   use error_trace::toplevel;
+//!
 //!   // Do something that fails
 //!   let err = std::str::from_utf8(&[0xFF]).unwrap_err();
-//!  
+//!
 //!   // Format it with a one-time parent error
-//!   eprintln!("{}", trace!(("Oh no, everything went wrong!"), err));
+//!   eprintln!("{}", toplevel!(("Oh no, everything went wrong!"), err));
 //!   ```
 //!
-//!   For users of the `colours`-feature, there is the associated [`trace_coloured!()`]-macro:
+//!   For users of the `colors`-feature, there is the associated [`toplevel_colored!()`]-macro:
 //!   ```rust
-//!   use error_trace::trace_coloured;
-//!  
+//!   use error_trace::toplevel_colored;
+//!
 //!   // Do something that fails
 //!   let err = std::str::from_utf8(&[0xFF]).unwrap_err();
-//!  
+//!
 //!   // Format it with a one-time parent error
-//!   eprintln!("{}", trace_coloured!(("Oh no, everything went wrong!"), err));
+//!   eprintln!("{}", toplevel_colored!(("Oh no, everything went wrong!"), err));
 //!   ```
-//!   
-//!   
+//!
+//!
 //!   # Installation
 //!   To use this crate into one of your projects, simply add it to your `Cargo.toml` file:
 //!   ```toml
@@ -172,21 +174,20 @@
 //!   ```
 //!   Optionally, you can commit to a particular tag:
 //!   ```toml
-//!   error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v1.1.0" }
+//!   error-trace = { git = "https://github.com/Lut99/error-trace-rs", tag = "v4.0.0" }
 //!   ```
-//!   
+//!
 //!   To build this crate's documentation and open it, run:
 //!   ```bash
 //!   cargo doc --all-features --no-deps --open
 //!   ```
 //!   in the root of the repository.
-//!   
+//!
 //!   ## Features
 //!   The crate has the following features:
-//!   - `colors`: Alias for the `colours`-trait.
-//!   - `colours`: Enables the use of [`trace_coloured()`].
-//!   - `macros`: Enables the use of the [`trace!()`]- and [`trace_coloured!()`]-macros.
-//!   - `serde`: Implements `Deserialize` and `Serialize` for the `Trace`-structure.
+//!   - `colors`: Enables the use of [`ErrorTrace::trace_colored()`].
+//!   - `macros`: Enables the use of the [`toplevel!()`]- and [`toplevel_colored!()`]-macros.
+//!   - `serde`: Implements `Deserialize` and `Serialize` for the [`FrozenTrace`]-structure.
 //
 
 // Modules
@@ -198,7 +199,7 @@ use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result as FResult};
 
-#[cfg(feature = "colours")]
+#[cfg(feature = "colors")]
 use console::style;
 
 
@@ -218,14 +219,14 @@ use console::style;
 ///
 /// # Example
 /// ```rust
-/// use error_trace::trace;
+/// use error_trace::toplevel;
 ///
 /// // Do something that fails
 /// let err = std::str::from_utf8(&[0xFF]).unwrap_err();
 ///
 /// // Format it with a one-time parent error
 /// assert_eq!(
-///     trace!(("Oh no, everything went wrong!"), err).to_string(),
+///     toplevel!(("Oh no, everything went wrong!"), err).to_string(),
 ///     r#"Oh no, everything went wrong!
 ///
 /// Caused by:
@@ -236,7 +237,7 @@ use console::style;
 /// ```
 /// One can use full format strings for the message:
 /// ```rust
-/// use error_trace::trace;
+/// use error_trace::toplevel;
 ///
 /// // Do something that fails
 /// let bytes: [u8; 1] = [0xFF];
@@ -244,7 +245,7 @@ use console::style;
 ///
 /// // Format it with a one-time parent error
 /// assert_eq!(
-///     trace!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
+///     toplevel!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
 ///     r#"Failed to parse '[255]'
 ///
 /// Caused by:
@@ -256,7 +257,7 @@ use console::style;
 ///
 /// // Equivalent to above (but using a neater format syntax!)
 /// assert_eq!(
-///     trace!(("Failed to parse '{bytes:?}'"), err).to_string(),
+///     toplevel!(("Failed to parse '{bytes:?}'"), err).to_string(),
 ///     r#"Failed to parse '[255]'
 ///
 /// Caused by:
@@ -266,18 +267,15 @@ use console::style;
 /// );
 /// ```
 #[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 #[macro_export]
-macro_rules! trace {
-    (crate ($($args:tt)*), $err:expr) => {
-        crate::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
-    };
-
+macro_rules! toplevel {
     (($($args:tt)*), $err:expr) => {
-        ::error_trace::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
+        $crate::ErrorTraceFormatter::new(format!($($args)*), Some(&$err))
     };
 }
 
-/// Creates a one-time [`ErrorTrace`]-compatible type from the given string, then calls [`trace_coloured()`](ErrorTrace::trace_coloured()) on it.
+/// Creates a one-time [`ErrorTrace`]-compatible type from the given string, then calls [`trace_colored()`](ErrorTrace::trace_colored()) on it.
 ///
 /// # Arguments
 /// The macro has the following signature:
@@ -288,18 +286,18 @@ macro_rules! trace {
 /// - `$err:expr`: The error to embed in the newly built type.
 ///
 /// # Returns
-/// An [`ErrorTraceColourFormatter`] that can be displayed immediately.
+/// An [`ErrorTraceColorFormatter`] that can be displayed immediately.
 ///
 /// # Example
 /// ```rust
-/// use error_trace::trace_coloured;
+/// use error_trace::toplevel_colored;
 ///
 /// // Do something that fails
 /// let err = std::str::from_utf8(&[0xFF]).unwrap_err();
 ///
 /// // Colours aren't visible here, because we're writing to a string; but try writing to stdout/stderr!
 /// assert_eq!(
-///     trace_coloured!(("Oh no, everything went wrong!"), err).to_string(),
+///     toplevel_colored!(("Oh no, everything went wrong!"), err).to_string(),
 ///     r#"Oh no, everything went wrong!
 ///
 /// Caused by:
@@ -310,7 +308,7 @@ macro_rules! trace {
 /// ```
 /// One can use full format strings for the message:
 /// ```rust
-/// use error_trace::trace_coloured;
+/// use error_trace::toplevel_colored;
 ///
 /// // Do something that fails
 /// let bytes: [u8; 1] = [0xFF];
@@ -318,7 +316,7 @@ macro_rules! trace {
 ///
 /// // Format it with a one-time parent error
 /// assert_eq!(
-///     trace_coloured!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
+///     toplevel_colored!(("Failed to parse '{:?}'", bytes.as_slice()), err).to_string(),
 ///     r#"Failed to parse '[255]'
 ///
 /// Caused by:
@@ -330,7 +328,7 @@ macro_rules! trace {
 ///
 /// // Equivalent to above (but using a neater format syntax!)
 /// assert_eq!(
-///     trace_coloured!(("Failed to parse '{bytes:?}'"), err).to_string(),
+///     toplevel_colored!(("Failed to parse '{bytes:?}'"), err).to_string(),
 ///     r#"Failed to parse '[255]'
 ///
 /// Caused by:
@@ -339,11 +337,12 @@ macro_rules! trace {
 /// "#
 /// );
 /// ```
-#[cfg(all(feature = "colours", feature = "macros"))]
+#[cfg(all(feature = "colors", feature = "macros"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "colors", feature = "macros"))))]
 #[macro_export]
-macro_rules! trace_coloured {
+macro_rules! toplevel_colored {
     (($($args:tt)*), $err:expr) => {
-        ::error_trace::ErrorTraceColourFormatter::new(format!($($args)*), Some(&$err))
+        $crate::ErrorTraceColorFormatter::new(format!($($args)*), Some(&$err))
     };
 }
 
@@ -354,7 +353,8 @@ macro_rules! trace_coloured {
 /***** FORMATTERS *****/
 /// Formats an error and all its dependencies.
 ///
-/// If you have the `colours`-feature enabled, then you can also use [`ErrorTraceColourFormatter`] to do the same but with colours.
+/// If you have the `colors`-feature enabled, then you can also use [`ErrorTraceColorFormatter`] to
+/// do the same but with ANSI-colors.
 ///
 /// # Example
 /// ```rust
@@ -386,11 +386,12 @@ impl<'s, 'e1, 'e2> ErrorTraceFormatter<'s, 'e1, 'e2> {
     ///
     /// This is useful for creating one-time error traces where you don't want to create the root type.
     ///
-    /// For even more convenience, see the [`trace!`]-macro.
+    /// For even more convenience, see the [`toplevel!`]-macro.
     ///
     /// # Arguments
     /// - `msg`: A message that is printed as "current error".
-    /// - `err`: An optional error that, if any, will cause this formatter to start printing a trace based on the error's [`Error::source()`]-implementation.
+    /// - `err`: An optional error that, if any, will cause this formatter to start printing a
+    ///   trace based on the error's [`Error::source()`]-implementation.
     ///
     /// # Returns
     /// A new ErrorTraceFormatter ready to rock-n-roll.
@@ -445,17 +446,20 @@ impl<'s, 'e1, 'e2> Display for ErrorTraceFormatter<'s, 'e1, 'e2> {
     }
 }
 
-/// Formats an error and all its dependencies using neat ANSI-colours if the formatter to which we're writing supports it.
+/// Formats an error and all its dependencies using neat ANSI-colors if the formatter to which
+/// we're writing supports it.
 ///
-/// Whether colours are enabled or not can be checked by [`console`]'s [`colors_enabled_stderr()`](console::colors_enabled_stderr()) function, and controlled by [`set_colors_enabled_stderr()`](console::set_colors_enabled_stderr()).
+/// Whether colors are enabled or not can be checked by [`console`]'s
+/// [`colors_enabled_stderr()`](console::colors_enabled_stderr()) function, and controlled by
+/// [`set_colors_enabled_stderr()`](console::set_colors_enabled_stderr()).
 ///
-/// See [`ErrorTraceFormatter`] to do the same but without ANSI colours at all.
+/// See [`ErrorTraceFormatter`] to do the same but without ANSI colors at all.
 ///
 /// # Example
 /// ```rust
 /// # use std::error::Error;
 /// # use std::fmt::{Display, Formatter, Result as FResult};
-/// use error_trace::{ErrorTraceColourFormatter, ErrorTrace as _};
+/// use error_trace::{ErrorTraceColorFormatter, ErrorTrace as _};
 ///
 /// #[derive(Debug)]
 /// struct ExampleError {
@@ -469,25 +473,27 @@ impl<'s, 'e1, 'e2> Display for ErrorTraceFormatter<'s, 'e1, 'e2> {
 /// impl Error for ExampleError {}
 ///
 /// let err = ExampleError { msg: "Hello, world!".into() };
-/// let fmt: ErrorTraceColourFormatter = err.trace_coloured();
+/// let fmt: ErrorTraceColorFormatter = err.trace_colored();
 ///
 /// // Colours aren't visible here, because we're writing to a string; but try writing to stdout/stderr!
 /// assert_eq!(format!("{fmt}"), "Hello, world!");
 /// ```
-#[cfg(feature = "colours")]
-pub struct ErrorTraceColourFormatter<'s, 'e1, 'e2> {
+#[cfg(feature = "colors")]
+#[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
+pub struct ErrorTraceColorFormatter<'s, 'e1, 'e2> {
     /// The message that is the main error message.
     msg: Cow<'s, str>,
     /// An optional nested error to format that is the first element in the tree.
     err: Option<&'e1 (dyn 'e2 + Error)>,
 }
-#[cfg(feature = "colours")]
-impl<'s, 'e1, 'e2> ErrorTraceColourFormatter<'s, 'e1, 'e2> {
+#[cfg(feature = "colors")]
+#[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
+impl<'s, 'e1, 'e2> ErrorTraceColorFormatter<'s, 'e1, 'e2> {
     /// Builds a formatter for a given "anonymous error".
     ///
     /// This is useful for creating one-time error traces where you don't want to create the root type.
     ///
-    /// For even more convenience, see the [`trace!`]-macro.
+    /// For even more convenience, see the [`toplevel!`]-macro.
     ///
     /// # Arguments
     /// - `msg`: A message that is printed as "current error".
@@ -498,8 +504,9 @@ impl<'s, 'e1, 'e2> ErrorTraceColourFormatter<'s, 'e1, 'e2> {
     #[inline]
     pub fn new(msg: impl Into<Cow<'s, str>>, err: Option<&'e1 (dyn 'e2 + Error)>) -> Self { Self { msg: msg.into(), err } }
 }
-#[cfg(feature = "colours")]
-impl<'s, 'e1, 'e2> Display for ErrorTraceColourFormatter<'s, 'e1, 'e2> {
+#[cfg(feature = "colors")]
+#[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
+impl<'s, 'e1, 'e2> Display for ErrorTraceColorFormatter<'s, 'e1, 'e2> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult {
         // Match on beautiness
         if f.alternate() {
@@ -562,7 +569,7 @@ impl<'s, 'e1, 'e2> Display for ErrorTraceColourFormatter<'s, 'e1, 'e2> {
 /// use std::error::Error;
 /// use std::fmt::{Display, Formatter, Result as FResult};
 ///
-/// use error_trace::{ErrorTrace as _, Trace};
+/// use error_trace::{ErrorTrace as _, FrozenTrace};
 ///
 /// #[derive(Debug)]
 /// struct SomeError {
@@ -592,7 +599,7 @@ impl<'s, 'e1, 'e2> Display for ErrorTraceColourFormatter<'s, 'e1, 'e2> {
 ///     child: SomeError { msg: "A specific reason".into() },
 /// };
 /// assert_eq!(
-///     Trace::new(err).trace().to_string(),
+///     FrozenTrace::new(err).trace().to_string(),
 ///     r#"Oh no, something went wrong!
 ///
 /// Caused by:
@@ -603,25 +610,25 @@ impl<'s, 'e1, 'e2> Display for ErrorTraceColourFormatter<'s, 'e1, 'e2> {
 /// ```
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct Trace {
+pub struct FrozenTrace {
     /// The error on this level.
     pub message: String,
     /// The error on the next level, if any.
     pub source:  Option<Box<Self>>,
 }
-impl Trace {
-    /// Builds a new Trace from the given [`Error`].
+impl FrozenTrace {
+    /// Builds a new FrozenTrace from the given [`Error`].
     ///
     /// # Arguments
     /// - `err`: The error to walk and to freeze the errors of by serializing the messages.
     ///
     /// # Returns
-    /// A new Trace that itself implements [`Error`] again.
+    /// A new FrozenTrace that itself implements [`Error`] again.
     ///
     /// # Example
-    /// See [`Trace`] itself for an example of how to use it, or see [`ErrorTrace::freeze()`].
+    /// See [`FrozenTrace`] itself for an example of how to use it, or see [`ErrorTrace::freeze()`].
     #[inline]
-    pub fn new(err: impl Error) -> Self { Self { message: err.to_string(), source: err.source().map(|err| Box::new(Trace::new(err))) } }
+    pub fn new(err: impl Error) -> Self { Self { message: err.to_string(), source: err.source().map(|err| Box::new(Self::new(err))) } }
 
     /// Builds a new Trace from a single [`String`].
     ///
@@ -635,9 +642,9 @@ impl Trace {
     /// ```rust
     /// use std::error::Error as _;
     ///
-    /// use error_trace::{ErrorTrace as _, Trace};
+    /// use error_trace::{ErrorTrace as _, FrozenTrace};
     ///
-    /// let trace = Trace::from_msg("Hello there!");
+    /// let trace = FrozenTrace::from_msg("Hello there!");
     /// assert_eq!(trace.trace().to_string(), "Hello there!");
     /// ```
     #[inline]
@@ -661,11 +668,11 @@ impl Trace {
     #[inline]
     pub fn as_error(&self) -> &(dyn 'static + Error) { self }
 }
-impl Display for Trace {
+impl Display for FrozenTrace {
     #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> FResult { write!(f, "{}", self.message) }
 }
-impl Error for Trace {
+impl Error for FrozenTrace {
     #[inline]
     fn source(&self) -> Option<&(dyn Error + 'static)> { self.source.as_ref().map(|src| src.as_error()) }
 }
@@ -724,11 +731,12 @@ impl Error for Trace {
 pub trait ErrorTrace: Error {
     /// "Freezes" the trace of this error.
     ///
-    /// This is useful in case you're dealing with errors where you don't want to propagate the type
-    /// (e.g., due to lifetimes) but do want to propagate the trace.
+    /// This is useful in case you're dealing with errors where you don't want to propagate the
+    /// type (e.g., due to lifetimes) but do want to propagate the trace.
     ///
     /// # Returns
-    /// A [`Trace`] that returns the same trace when formatter, except all errors are serialized to [`String`]s.
+    /// A [`FrozenTrace`] that returns the same trace when formatter, except all errors are
+    /// serialized to [`String`]s.
     ///
     /// # Example
     /// ```rust
@@ -780,17 +788,17 @@ pub trait ErrorTrace: Error {
     /// "#
     /// );
     /// ```
-    fn freeze(&self) -> Trace;
+    fn freeze(&self) -> FrozenTrace;
 
 
 
     /// Returns a formatter for showing this Error and all its [source](Error::source())s.
     ///
-    /// This function can be used similarly to [`Path::display()`](std::path::Path::display()), since its result
-    /// implements both [`Debug`] and [`Display`].
+    /// This function can be used similarly to [`Path::display()`](std::path::Path::display()),
+    /// since its result implements [`Display`].
     ///
     /// # Returns
-    /// A new [`ErrorTraceFormatter`] that implements [`Debug`] and [`Display`].
+    /// A new [`ErrorTraceFormatter`] that implements [`Display`].
     ///
     /// # Example
     /// ```rust
@@ -837,13 +845,13 @@ pub trait ErrorTrace: Error {
     /// "#);
     fn trace(&self) -> ErrorTraceFormatter;
 
-    /// Returns a formatter for showing this Error and all its [source](Error::source())s with nice colours.
+    /// Returns a formatter for showing this Error and all its [source](Error::source())s with nice colors.
     ///
-    /// This function can be used similarly to [`Path::display()`](std::path::Path::display()), since its result
-    /// implements both [`Debug`] and [`Display`].
+    /// This function can be used similarly to [`Path::display()`](std::path::Path::display()),
+    /// since its result implements [`Display`].
     ///
     /// # Returns
-    /// A new [`ErrorTraceColourFormatter`] that implements [`Debug`] and [`Display`].
+    /// A new [`ErrorTraceColorFormatter`] that implements [`Display`].
     ///
     /// # Example
     /// ```rust
@@ -882,23 +890,25 @@ pub trait ErrorTrace: Error {
     /// #
     /// #
     /// let err = HigherError { msg: "Oh no, something went wrong!".into(), child: SomeError { msg: "A specific reason".into() } };
-    /// assert_eq!(err.trace_coloured().to_string(), r#"Oh no, something went wrong!
+    /// assert_eq!(err.trace_colored().to_string(), r#"Oh no, something went wrong!
     ///
     /// Caused by:
     ///  o A specific reason
     ///
     /// "#);
-    #[cfg(feature = "colours")]
-    fn trace_coloured(&self) -> ErrorTraceColourFormatter;
+    #[cfg(feature = "colors")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
+    fn trace_colored(&self) -> ErrorTraceColorFormatter;
 }
 impl<T: ?Sized + Error> ErrorTrace for T {
     #[inline]
-    fn freeze(&self) -> Trace { Trace::new(self) }
+    fn freeze(&self) -> FrozenTrace { FrozenTrace::new(self) }
 
     #[inline]
     fn trace(&self) -> ErrorTraceFormatter { ErrorTraceFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 
-    #[cfg(feature = "colours")]
+    #[cfg(feature = "colors")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
     #[inline]
-    fn trace_coloured(&self) -> ErrorTraceColourFormatter { ErrorTraceColourFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
+    fn trace_colored(&self) -> ErrorTraceColorFormatter { ErrorTraceColorFormatter { msg: Cow::Owned(self.to_string()), err: self.source() } }
 }

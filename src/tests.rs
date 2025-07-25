@@ -31,6 +31,6 @@ fn test_static_trace() {
     #[allow(unused)]
     fn test(test: impl Test) {
         // Let's try to trace the resulting error
-        eprintln!("{}", trace!(crate("Failed to test"), test.failure()));
+        eprintln!("{}", toplevel!(("Failed to test"), test.failure()));
     }
 }

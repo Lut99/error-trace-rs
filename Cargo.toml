@@ -1,13 +1,28 @@
 [package]
 name = "error-trace"
-version = "3.3.1"
-edition = "2021"
-authors = [ "Lut99" ]
+version = "4.0.0"
+edition = "2024"
+authors = ["Lut99"]
 description = "Small Rust crate for printing nice errors traits based on `std::error::Error::source()`."
 repository = "https://github.com/Lut99/error-trace-rs"
 license = "Apache-2.0"
 readme = "README.md"
 categories = ["value-formatting"]
+
+
+[[example]]
+name = "trace"
+path = "examples/trace.rs"
+
+[[example]]
+name = "colored"
+path = "examples/colored.rs"
+required-features = ["colors"]
+
+[[example]]
+name = "one_time"
+path = "examples/one_time.rs"
+required-features = ["macros"]
 
 
 [dependencies]
@@ -16,8 +31,13 @@ serde = { version = "1.0.0", features = ["derive"], optional = true }
 
 
 [features]
-default = [ "macros" ]
-colors  = [ "colours" ]
-colours = [ "colors", "dep:console" ]
+default = ["macros"]
+
+colors = ["dep:console"]
 macros = []
 serde = ["dep:serde"]
+
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
