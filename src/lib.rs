@@ -99,6 +99,8 @@
 //!
 //!   If you enable the `colors`-feature, you can additionally print some neat colors:
 //!   ```rust
+//!   # #[cfg(feature = "colors")]
+//!   # {
 //!   use error_trace::ErrorTrace as _;
 //!
 //!   # use std::error::Error;
@@ -140,6 +142,7 @@
 //!
 //!   // Requires the `colors`-feature!
 //!   eprintln!("{}", err.trace_colored());
+//!   # }
 //!   ```
 //!   ![Showing the same error as above but with some errors](https://github.com/Lut99/error-trace-rs/raw/main/img/example_colors.png)
 //!
@@ -157,6 +160,8 @@
 //!
 //!   For users of the `colors`-feature, there is the associated [`toplevel_colored!()`]-macro:
 //!   ```rust
+//!   # #[cfg(feature = "colors")]
+//!   # {
 //!   use error_trace::toplevel_colored;
 //!
 //!   // Do something that fails
@@ -164,6 +169,7 @@
 //!
 //!   // Format it with a one-time parent error
 //!   eprintln!("{}", toplevel_colored!(("Oh no, everything went wrong!"), err));
+//!   # }
 //!   ```
 //!
 //!
